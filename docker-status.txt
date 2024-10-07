@@ -1,0 +1,9 @@
+CONTAINER ID   IMAGE             COMMAND                CREATED          STATUS          PORTS                    NAMES
+6716db4448fb   devops-service1   "python service1.py"   27 minutes ago   Up 27 minutes   0.0.0.0:8199->8199/tcp   devops-service1-1
+31671b38dff3   devops-service2   "./service2"           27 minutes ago   Up 27 minutes   0.0.0.0:8200->8200/tcp   devops-service2-1
+
+NETWORK ID     NAME             DRIVER    SCOPE
+c82aa3af3b61   bridge           bridge    local
+1f8edb78a2a2   devops_default   bridge    local
+8e6506606c6a   host             host      local
+9bb8317885c7   none             null      local
