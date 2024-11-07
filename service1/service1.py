@@ -3,7 +3,7 @@ import json
 import requests
 import subprocess
 from flask import Flask, Response
-
+from time import sleep
 app = Flask(__name__)
 
 # Function to fetch system information
@@ -39,6 +39,20 @@ def index():
     }
     
     return Response(json.dumps(combined_info, indent=2), mimetype='application/json')
+
+@app.route('/info', methods=['GET'])
+def info():
+    # Get information from Service2
+    service2_response = requests.get('http://service2:8200/info').json()
+    # Get information from this container
+    service1_info = get_system_info()
+    # Add 2-second delay before responding
+    sleep(2)
+    info_response = {
+        "service1": service1_info,
+        "service2": service2_response
+    }
+    return Response(json.dumps(info_response), status=200, mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8199)

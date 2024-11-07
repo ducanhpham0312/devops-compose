@@ -1,9 +1,14 @@
-CONTAINER ID   IMAGE             COMMAND                CREATED          STATUS          PORTS                    NAMES
-6716db4448fb   devops-service1   "python service1.py"   27 minutes ago   Up 27 minutes   0.0.0.0:8199->8199/tcp   devops-service1-1
-31671b38dff3   devops-service2   "./service2"           27 minutes ago   Up 27 minutes   0.0.0.0:8200->8200/tcp   devops-service2-1
+CONTAINER ID   IMAGE                         COMMAND                  CREATED          STATUS          PORTS                            NAMES
+d8e5562af9dd   devops-compose-nginx          "/docker-entrypoint.…"   11 seconds ago   Up 9 seconds    80/tcp, 0.0.0.0:8198->8198/tcp   devops-compose-nginx-1
+31689b8a79ce   devops-compose-service1       "python service1.py"     12 seconds ago   Up 10 seconds   0/tcp, 8199/tcp                  devops-compose-service1-1
+6d68cc3f090b   devops-compose-service1       "python service1.py"     12 seconds ago   Up 10 seconds   0/tcp, 8199/tcp                  devops-compose-service1-2
+7354eec955ae   devops-compose-service1       "python service1.py"     12 seconds ago   Up 9 seconds    0/tcp, 8199/tcp                  devops-compose-service1-3
+32d3207450be   devops-compose-stop_service   "python stop_service…"   12 seconds ago   Up 11 seconds   0/tcp, 9000/tcp                  devops-compose-stop_service-1
+bce34c7cfc01   devops-compose-service2       "./service2"             12 seconds ago   Up 11 seconds   0/tcp, 8200/tcp                  devops-compose-service2-1
 
-NETWORK ID     NAME             DRIVER    SCOPE
-c82aa3af3b61   bridge           bridge    local
-1f8edb78a2a2   devops_default   bridge    local
-8e6506606c6a   host             host      local
-9bb8317885c7   none             null      local
+NETWORK ID     NAME                     DRIVER    SCOPE
+21ba21b920d7   bridge                   bridge    local
+fe136d4d40f5   devops-compose_default   bridge    local
+1f8edb78a2a2   devops_default           bridge    local
+8e6506606c6a   host                     host      local
+9bb8317885c7   none                     null      local

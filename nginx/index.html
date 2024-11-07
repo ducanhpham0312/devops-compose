@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Request Interface</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { margin: 50px; text-align: center; display: grid; gap: 5px; }
+        textarea { height: 400px; margin-top: 20px; }
+        button { height: 50px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <textarea id="responseArea" placeholder="Response will appear here..." readonly></textarea>
+        <button onclick="makeRequest()" style="background-color: lightblue;">REQUEST</button>
+        <button onclick="stopContainers()" style="background-color: red;">STOP</button>
+    </div>
+    <script>
+        async function makeRequest() {
+            try {
+                const response = await fetch('/info');
+                const data = await response.text();
+                document.getElementById('responseArea').value = JSON.stringify(JSON.parse(data), undefined, 4);
+            } catch (error) {
+                console.error('Request failed:', error);
+            }
+        }
+
+        async function stopContainers() {
+            try {
+                await fetch('/stop', { method: 'POST' });
+                alert('Stopping all containers...');
+            } catch (error) {
+                console.error('Failed to stop containers:', error);
+            }
+        }
+    </script>
+</body>
+</html>
