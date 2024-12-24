@@ -2,7 +2,7 @@ stages:
   - build
 
 services:
-  - name: docker:dind
+  - name: docker:stable-dind
 
 variables:
   DOCKER_DRIVER: overlay2
