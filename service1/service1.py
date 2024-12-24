@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-import subprocess
+import docker
 from flask import Flask, Response
 from time import sleep
 app = Flask(__name__)
@@ -53,6 +53,14 @@ def info():
         "service2": service2_response
     }
     return Response(json.dumps(info_response), status=200, mimetype='application/json')
+
+@app.route('/stop', methods=['POST'])
+def stop_containers():
+    client = docker.from_env()
+    for container in client.containers.list():
+      container.stop()
+    client.close()
+    return "Containers stopped", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8199)

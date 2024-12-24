@@ -1,7 +1,7 @@
 # Use Python base image
 FROM python:3.12
 
-RUN pip install Flask requests
+RUN pip install Flask requests docker
 
 COPY service1.py /app/service1.py
 
