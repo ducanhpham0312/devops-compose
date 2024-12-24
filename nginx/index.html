@@ -8,15 +8,31 @@
         body { font-family: Arial, sans-serif; }
         .container { margin: 50px; text-align: center; display: grid; gap: 5px; }
         textarea { height: 400px; margin-top: 20px; }
-        button { height: 50px; }
+        button { height: 50px; background-color: lightblue;}
     </style>
 </head>
 <body>
     <div class="container">
+        <h2>REQUEST</h2>
         <textarea id="responseArea" placeholder="Response will appear here..." readonly></textarea>
-        <button onclick="makeRequest()" style="background-color: lightblue;">REQUEST</button>
-        <button onclick="stopContainers()" style="background-color: red;">STOP</button>
+        <button onclick="makeRequest()">REQUEST</button>
     </div>
+
+    <div class="container">
+        <h2>System Control</h2>
+        <button id="initButton" onclick="changeState('INIT')">INIT</button>
+        <button id="runningButton" onclick="changeState('RUNNING')">RUNNING</button>
+        <button id="pausedButton" onclick="changeState('PAUSED')">PAUSED</button>
+        <button id="shutdownButton" onclick="changeState('SHUTDOWN')">SHUTDOWN</button>
+    </div>
+
+    <div class="container">
+        <h2>System Status</h2>
+        <button id="getStateButton" onclick="getState()">Get Current State</button>
+        <button id="getLogButton" onclick="getLog()">Get Run Log</button>
+        <textarea id="stateLog" cols="50" rows="10" readonly></textarea>
+    </div>
+
     <script>
         async function makeRequest() {
             try {
@@ -34,6 +50,76 @@
                 alert('Stopping all containers...');
             } catch (error) {
                 console.error('Failed to stop containers:', error);
+            }
+        }
+
+        async function changeState(newState) {
+            try {
+                // PUT request to change the state
+                let response = await fetch('/state', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: newState
+                });
+
+                if (response.ok) {
+                    let data = await response.json();
+                    alert(data.message);
+
+                    if (newState === 'INIT') {
+                        console.log("Logging out...");
+                        window.location.reload();  //reloading the page
+                    } else if (newState === 'SHUTDOWN') {
+                        console.log("Shutting down...");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000); // Reload after 2 seconds
+                    }
+                } else {
+                    // Handle HTTP errors
+                    let errorData = await response.json();
+                    alert('Failed to change state. Message: ' + (errorData.message || 'Unknown error'));
+                }
+            } catch (error) {
+                // Handle unexpected errors
+                console.error('Error changing state:', error);
+                alert('Unexpected error while changing state. Check console for details.');
+            }
+        }
+
+
+
+
+
+        // Fetch the current state of the system
+        async function getState() {
+            try {
+                let response = await fetch('/state');
+                if (response.ok) {
+                    let state = await response.text();
+                    document.getElementById('stateLog').value = "Current State: " + state;
+                } else {
+                    alert('Failed to fetch state. HTTP-Error: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching state:', error);
+                alert('Error fetching state. Check console for details.');
+            }
+        }
+
+        // Fetch the run log of the system
+        async function getLog() {
+            try {
+                let response = await fetch('/run-log');
+                if (response.ok) {
+                    let log = await response.text();
+                    document.getElementById('stateLog').value = log;
+                } else {
+                    alert('Failed to fetch run log. HTTP-Error: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching run log:', error);
+                alert('Error fetching run log. Check console for details.');
             }
         }
     </script>

@@ -1,13 +1,19 @@
 stages:
   - build
-  - test
 
-job_build:
+services:
+  - name: docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+build:
   stage: build
   script:
-    - echo "Building the project"
+    - echo "Building all services..."
+    - docker compose build 
+    - docker images
+  only:
+    - project
 
-job_test:
-  stage: test
-  script:
-    - echo "Running tests"
