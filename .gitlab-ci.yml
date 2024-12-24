@@ -16,4 +16,3 @@ build:
     - docker images
   only:
     - project
-
