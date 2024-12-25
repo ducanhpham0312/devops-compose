@@ -12,6 +12,8 @@ services:
 
   service2:
     build: ./service2
+    expose:
+      - "8200:8200"
 
   nginx:
     build: ./nginx
@@ -19,3 +21,8 @@ services:
       - "8198:8198"
     depends_on:
       - service1
+
+  test:
+    build: ./tests
+    depends_on:
+      - nginx
