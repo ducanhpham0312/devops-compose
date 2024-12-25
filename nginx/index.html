@@ -17,6 +17,13 @@
         <button onclick="makeRequest()" style="background-color: lightblue;">REQUEST</button>
         <button onclick="stopContainers()" style="background-color: red;">STOP</button>
     </div>
+
+    <div>
+        <h2>System Control</h2>
+        <button id="initButton" onclick="changeState('INIT')">INIT</button>
+        <button id="runningButton" onclick="changeState('RUNNING')">RUNNING</button>
+    </div>
+
     <script>
         async function makeRequest() {
             try {
@@ -34,6 +41,37 @@
                 alert('Stopping all containers...');
             } catch (error) {
                 console.error('Failed to stop containers:', error);
+            }
+        }
+
+        async function changeState(newState) {
+            try {
+                // PUT request to change the state
+                let response = await fetch('/state', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: newState
+                });
+
+                if (response.ok) {
+                    let data = response.json;
+                    console.log(data)
+                    if (newState === 'INIT') {
+                        console.log("Logging out...");
+                        await new Promise(r => setTimeout(r, 2000));
+                        window.location.reload();
+                        alert("Window is reloaded")
+                    } 
+                } else {
+                    alert(response.status)
+                    // Handle HTTP errors
+                    let errorData = await response.json;
+                    alert('Failed to change state. Message: ' + (errorData || 'Unknown error'));
+                }
+            } catch (error) {
+                // Handle unexpected errors
+                console.error('Error changing state:', error);
+                alert('Unexpected error while changing state. Check console for details.');
             }
         }
     </script>
