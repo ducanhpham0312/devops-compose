@@ -4,7 +4,7 @@ stages:
   - deploy
 
 services:
-  - name: docker:stable-dind
+  - name: docker:20.10.9-dind
     alias: thedockerhost
 
 variables:
