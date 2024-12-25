@@ -19,6 +19,7 @@ services:
     build: ./nginx
     ports:
       - "8198:8198"
+      - "8197:8197"
     depends_on:
       - service1
 
