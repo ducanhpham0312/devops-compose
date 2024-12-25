@@ -15,27 +15,29 @@ variables:
 build:
   stage: build
   script:
-    - echo "Building all services..."
+    - echo "Beginning of build stage"
     - docker-compose build 
     - docker images
+    - echo "End of build stage"
   only:
     - project
 
 test:
   stage: test
   script:
-    - echo "Running tests ..."
+    - echo "Beginning of test stage"
     - docker-compose up --build test
     - docker-compose down
+    - echo "End of test stage"
   only:
     - project
 
 deploy:
   stage: deploy
   script:
-    - echo "Deploying services..."
+    - echo "Beginning of deploy stage"
     - docker-compose up -d
     - docker-compose ps
+    - echo "End of deploy stage"
   only:
     - project
-    - main
