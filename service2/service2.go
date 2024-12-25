@@ -22,7 +22,7 @@ type SystemInfo struct {
 	Uptime    string `json:"uptime"`
 }
 var (
-	state     = "INIT"
+	state     = ""
 	stateLog  []string
 	stateLock sync.Mutex
 )
@@ -34,7 +34,7 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 			// Return the current state without forcing re-authentication
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{"state": state})
+			json.NewEncoder(w).Encode(state)
 			w.WriteHeader(http.StatusOK)
 			return
 }
@@ -50,53 +50,119 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	newState := strings.TrimSpace(strings.ToUpper(string(body)))
 
 	if newState != "INIT" && newState != "RUNNING" && newState != "PAUSED" && newState != "SHUTDOWN" {
-			http.Error(w, `error: Invalid state: `+newState, http.StatusBadRequest)
+			http.Error(w, `ERROR: Invalid state: `+newState, http.StatusBadRequest)
 			return
 	}
 
 	if newState == state {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{"message": "No change in state"})
+			json.NewEncoder(w).Encode("No change in state")
 			w.WriteHeader(http.StatusOK)
 			return
 	}
 
 	// Handle INIT state
 	if newState == "INIT" {
-			stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339)+": "+state+"->INIT")
+			stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> INIT")
 			state = "INIT"
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Access"`)
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"message": "State changed to INIT. Please re-authenticate."})
+			json.NewEncoder(w).Encode("State changed to INIT. Please re-authenticate.")
 			return
 	}
 
 	// Handle RUNNING state
 	if newState == "RUNNING" {
 		if r.Header.Get("Authorization") == "" {
-			http.Error(w, `ERROR: Login required to transition to RUNNING`, http.StatusForbidden)
+			http.Error(w, `ERROR: Login required to change state to RUNNING`, http.StatusForbidden)
 			return
 		}
+		if state != "INIT" && state != "PAUSED" {
+			http.Error(w, `ERROR: Cannot change state to RUNNING from `+ state, http.StatusForbidden)
+			return
+		}
+
 		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> RUNNING")
 		state = "RUNNING"
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"message": "State changed to RUNNING"})
+		json.NewEncoder(w).Encode("State changed to RUNNING")
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
 	// Handle PAUSED state
 	if newState == "PAUSED" {
+		if state != "RUNNING" {
+			http.Error(w, `ERROR: Cannot change state to PAUSED from `+ state, http.StatusForbidden)
+			return
+		}
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> PAUSED")
+		state = "PAUSED"
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("State changed to PAUSED")
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
 	// Handle SHUTDOWN state
 	if newState == "SHUTDOWN" {
+		if state != "RUNNING" && state != "PAUSED" {
+			http.Error(w, `ERROR: Cannot change state to SHUTDOWN from `+ state, http.StatusForbidden)
+			return
+		}
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> SHUTDOWN")
+		state = "SHUTDOWN"
+		shutdownContainers()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("State changed to SHUTDOWN. Stopping all containers...")
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 }
 
 func shutdownContainers() {
-	// Implement container shutdown logic here
+	// Shutdown all running Docker containers
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Unexpected error during SHUTDOWN: %v", r)
+		}
+	}()
+
+	// Get IDs of all running containers
+	cmd := exec.Command("docker", "ps", "-q")
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("Error during container shutdown: %v", err)
+		return
+	}
+
+	containerIDs := strings.Fields(string(output))
+	if len(containerIDs) > 0 {
+		// Stop the running containers
+		cmd = exec.Command("docker", append([]string{"stop"}, containerIDs...)...)
+		stopOutput, err := cmd.Output()
+		if err != nil {
+			log.Printf("Error during container shutdown: %v", err)
+			return
+		}
+
+		stoppedContainers := strings.Fields(string(stopOutput))
+		log.Printf("Stopped containers: %v", stoppedContainers)
+
+		// Remove the stopped containers
+		cmd = exec.Command("docker", append([]string{"rm"}, stoppedContainers...)...)
+		rmOutput, err := cmd.Output()
+		if err != nil {
+			log.Printf("Error during container removal: %v", err)
+			return
+		}
+
+		removedContainers := strings.Fields(string(rmOutput))
+		log.Printf("Removed containers: %v", removedContainers)
+	} else {
+		log.Println("No running containers to stop.")
+	}
 }
 // Fetch system information
 func getSystemInfo() SystemInfo {
@@ -115,6 +181,10 @@ func getSystemInfo() SystemInfo {
 
 // Handler to return system information
 func infoHandler(w http.ResponseWriter, r *http.Request) {
+	if state != "RUNNING" {
+		http.Error(w, "Service2 is not in RUNNING state", http.StatusServiceUnavailable)
+		return
+	}
 	systemInfo := getSystemInfo()
 
 	w.Header().Set("Content-Type", "application/json")

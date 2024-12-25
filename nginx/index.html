@@ -15,13 +15,14 @@
     <div class="container">
         <textarea id="responseArea" placeholder="Response will appear here..." readonly></textarea>
         <button onclick="makeRequest()" style="background-color: lightblue;">REQUEST</button>
-        <button onclick="stopContainers()" style="background-color: red;">STOP</button>
     </div>
 
-    <div>
+    <div class="container">
         <h2>System Control</h2>
         <button id="initButton" onclick="changeState('INIT')">INIT</button>
-        <button id="runningButton" onclick="changeState('RUNNING')">RUNNING</button>
+        <button id="runningButton" onclick="changeState('RUNNING')" disabled>RUNNING</button>
+        <button id="pausedButton" onclick="changeState('PAUSED')" disabled>PAUSED</button>
+        <button id="shutdownButton" onclick="changeState('SHUTDOWN')" disabled>SHUTDOWN</button>
     </div>
 
     <script>
@@ -54,19 +55,38 @@
                 });
 
                 if (response.ok) {
-                    let data = response.json;
-                    console.log(data)
                     if (newState === 'INIT') {
-                        console.log("Logging out...");
-                        await new Promise(r => setTimeout(r, 2000));
-                        window.location.reload();
-                        alert("Window is reloaded")
-                    } 
+                        alert("System state changed to INIT");
+                        document.getElementById('responseArea').value = "";
+                        document.getElementById('runningButton').disabled = false;
+                        document.getElementById('shutdownButton').disabled = true;
+                        document.getElementById('pausedButton').disabled = true;
+                        document.getElementById('initButton').disabled = true;
+                    } else if (newState === 'SHUTDOWN') {
+                        console.log("Shutting down...");
+                    } else if (newState === 'RUNNING') {
+                        console.log("System is running...");
+                        alert("System state changed to RUNNING");
+                        document.getElementById('runningButton').disabled = true;
+                        document.getElementById('pausedButton').disabled = false;
+                        document.getElementById('initButton').disabled = false;
+                        document.getElementById('shutdownButton').disabled = false;
+                    } else if (newState === 'PAUSED') {
+                        console.log("System is paused...");
+                        alert("System state changed to PAUSED");
+                        document.getElementById('runningButton').disabled = false;
+                        document.getElementById('pausedButton').disabled = true;
+                        document.getElementById('initButton').disabled = false;
+                        document.getElementById('shutdownButton').disabled = false;
+                    }
                 } else {
-                    alert(response.status)
-                    // Handle HTTP errors
-                    let errorData = await response.json;
-                    alert('Failed to change state. Message: ' + (errorData || 'Unknown error'));
+                    if (response.status === 401) {
+                        alert("You need to re-login to perform this action.")
+                    }
+                    else {
+                        alert("Failed to change state to " + newState + 
+                              ". Status code: " + response.status)
+                    }
                 }
             } catch (error) {
                 // Handle unexpected errors

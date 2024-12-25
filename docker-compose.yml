@@ -22,6 +22,7 @@ services:
       - "8197:8197"
     depends_on:
       - service1
+      - service2
 
   test:
     build: ./tests
