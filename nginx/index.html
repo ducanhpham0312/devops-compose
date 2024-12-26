@@ -25,6 +25,12 @@
         <button id="shutdownButton" onclick="changeState('SHUTDOWN')" disabled>SHUTDOWN</button>
     </div>
 
+    <div class="container">
+        <h2>System Status</h2>
+        <button id="getStateButton" onclick="getState()">Get Current State</button>
+        <textarea id="stateLog" readonly></textarea>
+    </div>
+
     <script>
         async function makeRequest() {
             try {
@@ -92,6 +98,21 @@
                 // Handle unexpected errors
                 console.error('Error changing state:', error);
                 alert('Unexpected error while changing state. Check console for details.');
+            }
+        }
+        
+        async function getState() {
+            try {
+                let response = await fetch('/state');
+                if (response.ok) {
+                    let state = await response.text();
+                    document.getElementById('stateLog').value = "Current State: " + state;
+                } else {
+                    alert('Failed to fetch state: ' + response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching state:', error);
+                alert('Error fetching state. Check console for details.');
             }
         }
     </script>

@@ -22,7 +22,7 @@ type SystemInfo struct {
 	Uptime    string `json:"uptime"`
 }
 var (
-	state     = ""
+	state     = "INIT"
 	stateLog  []string
 	stateLock sync.Mutex
 )
