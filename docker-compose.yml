@@ -9,11 +9,15 @@ services:
       - service2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-network
 
   service2:
     build: ./service2
     expose:
       - "8200:8200"
+    networks:
+      - app-network
 
   nginx:
     build: ./nginx
@@ -23,8 +27,22 @@ services:
     depends_on:
       - service1
       - service2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8197"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app-network
 
   test:
     build: ./tests
     depends_on:
-      - nginx
+      nginx:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
