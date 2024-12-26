@@ -9,15 +9,11 @@ services:
       - service2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - app-network
 
   service2:
     build: ./service2
     expose:
       - "8200:8200"
-    networks:
-      - app-network
 
   nginx:
     build: ./nginx
@@ -27,16 +23,8 @@ services:
     depends_on:
       - service1
       - service2
-    networks:
-      - app-network
 
   test:
     build: ./tests
     depends_on:
       - nginx
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
