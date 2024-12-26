@@ -38,5 +38,15 @@ class TestAPIGateway(unittest.TestCase):
         receivedState = response.text
         self.assertEqual(response.status_code, 200)
         self.assertIn(receivedState, receivedState, "The test receives unexpected state.")
+    
+    def test_get_request(self):
+        requests.put(f"{self.BASE_URL}/state", data="RUNNING", auth=(self.username, self.password))
+
+        response = requests.get(f"{self.BASE_URL}/request", auth=(self.username, self.password))
+        if response.status_code == 403:
+            self.assertIn("Service2 is not in RUNNING state", response.text, "This test expects a different response to this state change.")
+        else:
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("IP Address", response.json(), "Unexpected response format for /request")
 if __name__ == "__main__":
     unittest.main()
