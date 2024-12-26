@@ -27,19 +27,13 @@ services:
     depends_on:
       - service1
       - service2
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8197"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     networks:
       - app-network
 
   test:
     build: ./tests
     depends_on:
-      nginx:
-        condition: service_healthy
+      - nginx
     networks:
       - app-network
 
