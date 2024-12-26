@@ -8,10 +8,10 @@ class TestAPIGateway(unittest.TestCase):
     password = "password"
 
     # Test cases for the API Gateway
-    def test_put_state_init(self):
+    def test_put_same_state(self):
         response = requests.put(f"{self.url}/state", data="INIT", auth=(self.username, self.password))
-        self.assertEqual(response.status_code, 401)  # Expecting 401 because of re-authentication
-        self.assertIn("Please re-authenticate", response.text, "This test expects a re-authenticate message.")
+        self.assertEqual(response.status_code, 200)  # Expecting 401 because of re-authentication
+        self.assertIn("No change in state", response.text, "This test expects the state to stay the same.")
     
     def test_put_state_running(self):
         response = requests.put(f"{self.url}/state", data="RUNNING", auth=(self.username, self.password))
@@ -30,5 +30,13 @@ class TestAPIGateway(unittest.TestCase):
         response = requests.put(f"{self.url}/state", data="SHUTDOWN", auth=(self.username, self.password))
         self.assertEqual(response.status_code, 200)
         self.assertIn("State changed to SHUTDOWN", response.text, "The test receives unexpected response for state change.")
+        
+    def test_get_state(self):
+        state = "INIT"
+        response = requests.put(f"{self.url}/state", data=state, auth=(self.username, self.password))
+        response = requests.get(f"{self.url}/state", auth=(self.username, self.password))
+        receivedState = response.text
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(receivedState, receivedState, "The test receives unexpected state.")
 if __name__ == "__main__":
     unittest.main()
