@@ -2,7 +2,8 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN pip install requests
+RUN apt-get update && apt-get install -y procps && rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir requests unittest-xml-reporting
 
 EXPOSE 8197
 
