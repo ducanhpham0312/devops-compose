@@ -51,5 +51,9 @@ class TestAPIGateway(unittest.TestCase):
         else:
             self.assertEqual(response.status_code, 200)
             self.assertIn("ip_address", response.text, "This test receives unexpected response for GET /request.")
+    def test_get_run_log(self):
+        response = requests.get(f"{self.url}/run-log", auth=(self.username, self.password))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(response.text) > 0, "This test expects run log to not be empty.")
 if __name__ == "__main__":
     unittest.main()
