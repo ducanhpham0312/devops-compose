@@ -1,13 +1,19 @@
+"""Test cases for nginx exercise. Should not affect the implementation of the project."""
 import unittest
 import requests
 
 class TestApp(unittest.TestCase):
+    """Test cases for the app"""
+
     def test_get_page(self):
+        """Test that the main page is accessible"""
         url = "http://nginx:8197"
         response = requests.get(url, auth=("username", "password"))
         self.assertEqual(response.status_code, 200)
+
     def test_get_info(self):
-        url = "http://nginx:8197"
+        """Test that the info endpoint is accessible"""
+        url = "http://nginx:8197/info"
         response = requests.get(url, auth=("username", "password"))
         self.assertEqual(response.status_code, 200)
 

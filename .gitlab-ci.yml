@@ -29,7 +29,7 @@ pylint:
   script:
     - echo "Beginning of pylint stage"
     - pip install pylint
-    - pylint ./tests/*.py
+    - pylint --fail-under=8 ./tests/*.py
     - echo "End of pylint stage"
   only:
     - project
