@@ -191,6 +191,13 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(systemInfo)
 }
 
+func runLog(w http.ResponseWriter, r *http.Request) {
+	// Fetch the run log
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(strings.Join(stateLog, "\n")))
+}
+
 func main() {
 	// Create a channel to listen for OS signals
 	sigs := make(chan os.Signal, 1)
@@ -198,6 +205,7 @@ func main() {
 
 	http.HandleFunc("/info", infoHandler)
 	http.HandleFunc("/state", manageState)
+	http.HandleFunc("/run-log", runLog)
 
 	go func() {
 		log.Println("Service2 running on port 8200")
