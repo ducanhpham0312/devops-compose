@@ -28,7 +28,7 @@ pylint:
   image: python:3.8
   script:
     - echo "Beginning of pylint stage"
-    - pip install pylint requests unittest
+    - pip install pylint requests
     - pylint --fail-under=8 ./tests/*.py
     - echo "End of pylint stage"
   only:
