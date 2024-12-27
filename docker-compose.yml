@@ -25,6 +25,11 @@ services:
     depends_on:
       - service1
       - service2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
+      - ./nginx/index.html:/usr/share/nginx/index.html
+      - ./nginx/index.js:/usr/share/nginx/index.js
 
   test:
     build: ./tests

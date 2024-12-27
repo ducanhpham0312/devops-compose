@@ -17,7 +17,7 @@ build:
   script:
     - echo "Beginning of build stage"
     - docker-compose build 
-    - docker images
+    - docker-compose up -d
     - echo "End of build stage"
   only:
     - project
@@ -26,8 +26,9 @@ test:
   stage: test
   script:
     - echo "Beginning of test stage"
-    - docker-compose build test
+    - docker-compose ps
     - docker-compose run test || exit 1
+  after_script:
     - docker-compose down
     - echo "End of test stage"
   only:
