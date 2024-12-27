@@ -61,6 +61,7 @@ def index():
     return Response(json.dumps(combined_info, indent=2), mimetype='application/json')
 
 @app.route('/info', methods=['GET'])
+@app.route('/request', methods=['GET'])
 def info():
     # Get information from Service2
     service2_response = get_service2_info()
@@ -72,7 +73,7 @@ def info():
         "service1": service1_info,
         "service2": service2_response
     }
-    return Response(json.dumps(info_response), status=200, mimetype='application/json')
+    return Response(json.dumps(info_response, indent=2), status=200, mimetype='application/json')
 
 @app.route('/stop', methods=['POST'])
 def stop_containers():
