@@ -1,55 +1,58 @@
+"""Service1 module for handling requests and fetching system information."""
+
 import os
 import json
-import requests
-import docker
-from flask import Flask, Response
 from time import sleep
+import requests
+from flask import Flask, Response
+import docker
+
 app = Flask(__name__)
 
 SERVICE2_REQUEST_URL = "http://service2:8200/info"
 
 def get_service1_info():
+    """Fetch system information for Service1."""
     try:
         service2_response = requests.get(SERVICE2_REQUEST_URL)
         if service2_response.status_code != 200:
             return service2_response.text
-        else:
-            ip_address = os.popen("hostname -i").read().strip()
-            processes = os.popen("ps -ax").read()
-            disk_space = os.popen("df").read()
-            uptime = os.popen("uptime").read().strip()
-            return {
-                "ip_address": ip_address,
-                "processes": processes,
-                "disk_space": disk_space,
-                "uptime": uptime
-            }
-    except Exception as e:
-        return e
-    
+        ip_address = os.popen("hostname -i").read().strip()
+        processes = os.popen("ps -ax").read()
+        disk_space = os.popen("df").read()
+        uptime = os.popen("uptime").read().strip()
+        return {
+            "ip_address": ip_address,
+            "processes": processes,
+            "disk_space": disk_space,
+            "uptime": uptime
+        }
+    except Exception as ex:
+        return str(ex)
+
 def get_service2_info():
+    """Fetch system information from Service2."""
     try:
         service2_response = requests.get(SERVICE2_REQUEST_URL)
         if service2_response.status_code == 503:
             return "Service2 is not in RUNNING state: " + service2_response.reason
-        elif service2_response.status_code != 200:
+        if service2_response.status_code != 200:
             return "Error when sending a GET request to service2: " + service2_response.text
-        else:
-            return service2_response.json()
-    
-    except Exception as e:
-        return e
+        return service2_response.json()
+    except Exception as ex:
+        return str(ex)
 
 @app.route('/')
 def index():
+    """Fetch and combine system info for Service1 and Service2."""
     # Fetch system info for Service1
     service1_info = get_service1_info()
-    
+
     # Fetch system info from Service2
     try:
         service2_info = get_service2_info()
-    except Exception as e:
-        error_response = str(e)
+    except Exception as ex:
+        error_response = str(ex)
         return Response(json.dumps(error_response), status=500, mimetype='application/json')
 
     # Combine Service1 and Service2 info
@@ -57,12 +60,13 @@ def index():
         "service1": service1_info,
         "service2": service2_info
     }
-    
+
     return Response(json.dumps(combined_info, indent=2), mimetype='application/json')
 
 @app.route('/info', methods=['GET'])
 @app.route('/request', methods=['GET'])
 def info():
+    """Get information from Service2 and this container."""
     # Get information from Service2
     service2_response = get_service2_info()
     # Get information from this container
@@ -77,11 +81,13 @@ def info():
 
 @app.route('/stop', methods=['POST'])
 def stop_containers():
+    """Stop all running containers."""
     client = docker.from_env()
     for container in client.containers.list():
-      container.stop()
+        container.stop()
     client.close()
     return "Containers stopped", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8199)
+    
