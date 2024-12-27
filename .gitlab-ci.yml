@@ -1,5 +1,6 @@
 stages:
   - build
+  - pylint
   - test
   - deploy
 
@@ -19,6 +20,17 @@ build:
     - docker-compose build 
     - docker-compose up -d
     - echo "End of build stage"
+  only:
+    - project
+
+pylint:
+  stage: pylint
+  image: python:3.12
+  script:
+    - echo "Beginning of pylint stage"
+    - pip install pylint
+    - pylint /app/tests/*.py
+    - echo "End of pylint stage"
   only:
     - project
 
