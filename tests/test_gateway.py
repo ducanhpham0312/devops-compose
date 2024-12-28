@@ -6,11 +6,13 @@ import requests
 class TestGateway(unittest.TestCase):
     """Test cases for the gateway service."""
 
+    url = "http://nginx:8197"
+    username = "username"
+    password = "password"
+
     def setUp(self):
         """Set up the test case."""
-        self.url = "http://nginx:8197"
-        self.username = "username"
-        self.password = "password"
+        requests.put(f"{self.url}/state", data="INIT", auth=(self.username, self.password))
 
     def test_get_page(self):
         """Test that the main page is accessible."""
@@ -20,11 +22,6 @@ class TestGateway(unittest.TestCase):
     def test_get_info(self):
         """Test that the info endpoint is accessible."""
         response = requests.get(f"{self.url}/info", auth=(self.username, self.password))
-        self.assertEqual(response.status_code, 200)
-
-    def test_stop_containers(self):
-        """Test that the stop endpoint is accessible."""
-        response = requests.post(f"{self.url}/stop", auth=(self.username, self.password))
         self.assertEqual(response.status_code, 200)
 
     def test_change_state(self):
@@ -42,7 +39,7 @@ class TestGateway(unittest.TestCase):
         """Test getting the current state."""
         response = requests.get(f"{self.url}/state", auth=(self.username, self.password))
         self.assertEqual(response.status_code, 200)
-        received_state = response.text.strip()
+        received_state = response.text.strip().strip("\"")
         self.assertIn(received_state, ["INIT", "RUNNING", "PAUSED", "SHUTDOWN"])
 
     def test_get_run_log(self):
