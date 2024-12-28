@@ -96,3 +96,22 @@ async function getLog() {
       alert('Error fetching run log. Check console for details.');
   }
 }
+
+async function getMetrics() {
+  try {
+    const response = await fetch('/metrics', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const metrics = await response.text();
+    document.getElementById('stateLogArea').value = JSON.stringify(JSON.parse(metrics), null, 2);
+  } catch (error) {
+    console.error('Error fetching metrics:', error);
+    alert('Failed to fetch metrics: ' + error.message);
+  }
+}

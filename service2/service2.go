@@ -25,6 +25,9 @@ var (
 	state     = "INIT"
 	stateLog  []string
 	stateLock sync.Mutex
+	totalRequestCount = 0
+	successRequestCount = 0
+	startTime = time.Now().UTC()
 )
 
 func manageState(w http.ResponseWriter, r *http.Request) {
@@ -36,6 +39,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(state)
 			w.WriteHeader(http.StatusOK)
+			successRequestCount++
+			totalRequestCount++
 			return
 }
 
@@ -51,6 +56,7 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 
 	if newState != "INIT" && newState != "RUNNING" && newState != "PAUSED" && newState != "SHUTDOWN" {
 			http.Error(w, `ERROR: Invalid state: `+newState, http.StatusBadRequest)
+			totalRequestCount++
 			return
 	}
 
@@ -58,6 +64,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode("No change in state")
 			w.WriteHeader(http.StatusOK)
+			successRequestCount++
+			totalRequestCount++
 			return
 	}
 
@@ -69,6 +77,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Access"`)
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode("State changed to INIT. Please re-authenticate.")
+			successRequestCount++
+			totalRequestCount++
 			return
 	}
 
@@ -76,10 +86,12 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	if newState == "RUNNING" {
 		if r.Header.Get("Authorization") == "" {
 			http.Error(w, `ERROR: Login required to change state to RUNNING`, http.StatusForbidden)
+			totalRequestCount++
 			return
 		}
 		if state != "INIT" && state != "PAUSED" {
 			http.Error(w, `ERROR: Cannot change state to RUNNING from `+ state, http.StatusForbidden)
+			totalRequestCount++
 			return
 		}
 
@@ -88,6 +100,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("State changed to RUNNING")
 		w.WriteHeader(http.StatusOK)
+		successRequestCount++
+		totalRequestCount++
 		return
 	}
 
@@ -95,6 +109,7 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	if newState == "PAUSED" {
 		if state != "RUNNING" {
 			http.Error(w, `ERROR: Cannot change state to PAUSED from `+ state, http.StatusForbidden)
+			totalRequestCount++
 			return
 		}
 		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> PAUSED")
@@ -102,6 +117,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("State changed to PAUSED")
 		w.WriteHeader(http.StatusOK)
+		successRequestCount++
+		totalRequestCount++
 		return
 	}
 
@@ -109,6 +126,7 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	if newState == "SHUTDOWN" {
 		if state != "RUNNING" && state != "PAUSED" {
 			http.Error(w, `ERROR: Cannot change state to SHUTDOWN from `+ state, http.StatusForbidden)
+			totalRequestCount++
 			return
 		}
 		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> SHUTDOWN")
@@ -117,6 +135,8 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("State changed to SHUTDOWN. Stopping all containers...")
 		w.WriteHeader(http.StatusOK)
+		successRequestCount++
+		totalRequestCount++
 		return
 	}
 }
@@ -171,6 +191,8 @@ func getSystemInfo() SystemInfo {
 	diskSpace, _ := exec.Command("df").Output()
 	uptime, _ := exec.Command("uptime").Output()
 
+	successRequestCount++
+	totalRequestCount++
 	return SystemInfo{
 		IPAddress: string(ip),
 		Processes: string(processes),
@@ -196,6 +218,19 @@ func runLog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(strings.Join(stateLog, "\n")))
+	successRequestCount++
+	totalRequestCount++
+}
+
+func getMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"Total Requests":   totalRequestCount,
+		"Successful Requests": successRequestCount,
+		"Start Time": startTime.Format(time.RFC3339),
+		"Uptime": time.Since(startTime).String(),
+		"Current State": state,
+	})
 }
 
 func main() {
@@ -206,6 +241,7 @@ func main() {
 	http.HandleFunc("/info", infoHandler)
 	http.HandleFunc("/state", manageState)
 	http.HandleFunc("/run-log", runLog)
+	http.HandleFunc("/metrics", getMetrics)
 
 	go func() {
 		log.Println("Service2 running on port 8200")
