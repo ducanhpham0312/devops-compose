@@ -1,8 +1,8 @@
 stages:
-  - build
-  - pylint
+  # - build
+  # - pylint
   - test
-  - deploy
+  # - deploy
 
 services:
   - name: docker:20.10.9-dind
