@@ -6,8 +6,10 @@ stages:
 
 services:
   - name: docker:20.10.9-dind
+    alias: thedockerhost
 
 variables:
+  DOCKER_HOST: tcp://thedockerhost:2375/
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
 
