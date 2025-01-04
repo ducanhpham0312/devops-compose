@@ -14,7 +14,7 @@ SERVICE2_REQUEST_URL = "http://service2:8200/info"
 def get_service1_info():
     """Fetch system information for Service1."""
     try:
-        service2_response = requests.get(SERVICE2_REQUEST_URL)
+        service2_response = requests.get(SERVICE2_REQUEST_URL, timeout=10)
         if service2_response.status_code != 200:
             return service2_response.text
         ip_address = os.popen("hostname -i").read().strip()
@@ -27,19 +27,19 @@ def get_service1_info():
             "disk_space": disk_space,
             "uptime": uptime
         }
-    except Exception as ex:
+    except requests.exceptions.RequestException as ex:
         return str(ex)
 
 def get_service2_info():
     """Fetch system information from Service2."""
     try:
-        service2_response = requests.get(SERVICE2_REQUEST_URL)
+        service2_response = requests.get(SERVICE2_REQUEST_URL, timeout=10)
         if service2_response.status_code == 503:
             return "Service2 is not in RUNNING state: " + service2_response.reason
         if service2_response.status_code != 200:
             return "Error when sending a GET request to service2: " + service2_response.text
         return service2_response.json()
-    except Exception as ex:
+    except requests.exceptions.RequestException as ex:
         return str(ex)
 
 @app.route('/')
@@ -51,7 +51,7 @@ def index():
     # Fetch system info from Service2
     try:
         service2_info = get_service2_info()
-    except Exception as ex:
+    except requests.exceptions.RequestException as ex:
         error_response = str(ex)
         return Response(json.dumps(error_response), status=500, mimetype='application/json')
 
@@ -90,4 +90,3 @@ def stop_containers():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8199)
-    

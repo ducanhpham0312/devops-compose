@@ -28,7 +28,7 @@ pylint:
   image: python:3.12
   script:
     - echo "Beginning of pylint stage"
-    - pip install pylint requests
+    - pip install pylint requests docker flask
     - pylint --fail-under=8 ./tests/*.py
     - pylint --fail-under=8 ./service1/*.py
     - echo "End of pylint stage"
