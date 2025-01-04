@@ -6,10 +6,8 @@ stages:
 
 services:
   - name: docker:20.10.9-dind
-    alias: thedockerhost
 
 variables:
-  DOCKER_HOST: tcp://thedockerhost:2375/
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
 
@@ -17,8 +15,8 @@ build:
   stage: build
   script:
     - echo "Beginning of build stage"
-    - docker-compose build 
-    - docker-compose up -d
+    - docker-compose build
+    - docker images
     - echo "End of build stage"
   only:
     - project
@@ -39,8 +37,7 @@ test:
   stage: test
   script:
     - echo "Beginning of test stage"
-    - docker-compose ps
-    - docker-compose run test || exit 1
+    - docker-compose up --build test || exit 1
   after_script:
     - docker-compose down
     - echo "End of test stage"
