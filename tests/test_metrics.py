@@ -6,7 +6,7 @@ import requests
 
 class TestMetrics(unittest.TestCase):
     """Tests for getting metrics"""
-    url = "http://nginx:8197"
+    url = "http://localhost:8197"
     def test_get_metrics(self):
         """Tests for getting metrics"""
         username = "username"

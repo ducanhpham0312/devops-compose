@@ -6,7 +6,7 @@ import requests
 class TestGateway(unittest.TestCase):
     """Test cases for the gateway service."""
 
-    url = "http://nginx:8197"
+    url = "http://localhost:8197"
     username = "username"
     password = "password"
 
