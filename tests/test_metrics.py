@@ -5,7 +5,7 @@ import time
 import requests
 import os
 
-SERVICE_HOST = os.getenv("SERVICE_HOST", "localhost")
+SERVICE_HOST = os.getenv("SERVICE_HOST", "nginx")
 SERVICE_PORT = os.getenv("SERVICE_PORT", "8197")
 class TestMetrics(unittest.TestCase):
     """Tests for getting metrics"""
@@ -15,14 +15,14 @@ class TestMetrics(unittest.TestCase):
         username = "username"
         password = "password"
 
-        response = requests.get(f"{self.url}/metrics", auth=(username, password))
+        response = requests.get(f"{self.url}/metrics", auth=(username, password), timeout=10)
         self.assertEqual(response.status_code, 200)
         initial_metrics = response.json()
         initial_uptime = float(initial_metrics.get('Uptime').split(" ")[0])
 
         time.sleep(5)
 
-        response = requests.get(f"{self.url}/metrics", auth=(username, password))
+        response = requests.get(f"{self.url}/metrics", auth=(username, password), timeout=10)
         self.assertEqual(response.status_code, 200)
         updated_metrics = response.json()
         updated_uptime = float(updated_metrics.get('Uptime').split(" ")[0])
