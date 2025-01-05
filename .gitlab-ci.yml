@@ -37,6 +37,7 @@ pylint:
 
 test:
   stage: test
+  image: python:3.12
   script:
     - echo "Beginning of test stage"
     - docker-compose up --build -d
