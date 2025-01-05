@@ -3,10 +3,13 @@
 import unittest
 import time
 import requests
+import os
 
+SERVICE_HOST = os.getenv("SERVICE_HOST", "localhost")
+SERVICE_PORT = os.getenv("SERVICE_PORT", "8197")
 class TestMetrics(unittest.TestCase):
     """Tests for getting metrics"""
-    url = "http://localhost:8197"
+    url = f"http://{SERVICE_HOST}:{SERVICE_PORT}"
     def test_get_metrics(self):
         """Tests for getting metrics"""
         username = "username"
