@@ -17,7 +17,7 @@ build:
   stage: build
   script:
     - echo "Beginning of build stage"
-    - docker-compose build
+    - docker-compose up --build -d
     - docker images
     - echo "End of build stage"
   only:
@@ -40,7 +40,6 @@ test:
   image: python:3.12
   script:
     - echo "Beginning of test stage"
-    - docker-compose up --build -d
     - python3 -m unittest discover -s tests || exit 1
     # - docker run -d --net host nginx
     # - docker-compose run test || exit 1
