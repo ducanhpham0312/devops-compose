@@ -9,8 +9,6 @@ services:
     alias: thedockerhost
 
 variables:
-  SERVICE_HOST: "service-container"
-  SERVICE_PORT: 8197
   DOCKER_HOST: tcp://thedockerhost:2375/
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
@@ -40,8 +38,6 @@ pylint:
 test:
   stage: test
   image: python:3.12
-  services:
-    - service-container:latest
   script:
     - echo "Beginning of test stage"
     - pip install requests
