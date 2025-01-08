@@ -5,13 +5,15 @@ stages:
   - deploy
 
 services:
+  - name: docker:20.10.9-dind
+    alias: thedockerhost
   - name: nginx:latest
     alias: nginx
 
-# variables:
-#   DOCKER_HOST: tcp://thedockerhost:2375/
-#   DOCKER_DRIVER: overlay2
-#   DOCKER_TLS_CERTDIR: ""
+variables:
+  DOCKER_HOST: tcp://thedockerhost:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
 
 build:
   stage: build
