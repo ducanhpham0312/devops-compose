@@ -45,8 +45,6 @@ test:
     - docker:dind
     - name: nginx:latest
       alias: nginx
-      ports:
-        - "8197:8197"
   variables:
     DOCKER_HOST: tcp://thedockerhost:2375/
     DOCKER_DRIVER: overlay2
