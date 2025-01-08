@@ -10,7 +10,7 @@ SERVICE_PORT = os.getenv("SERVICE_PORT", "8197")
 class TestGateway(unittest.TestCase):
     """Test cases for the gateway service."""
 
-    url = f"http://{SERVICE_HOST}:{SERVICE_PORT}"
+    url = "http://nginx:8197"
     username = "username"
     password = "password"
 

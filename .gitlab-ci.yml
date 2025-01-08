@@ -5,8 +5,8 @@ stages:
   - deploy
 
 services:
-  - name: docker:20.10.9-dind
-    alias: thedockerhost
+  - name: nginx:latest
+    alias: nginx
 
 variables:
   DOCKER_HOST: tcp://thedockerhost:2375/
@@ -37,14 +37,14 @@ pylint:
 
 test:
   stage: test
-  # image: python:3.12
-  image: docker:latest
+  image: python:3.12
+  # image: docker:latest
   script:
     - echo "Beginning of test stage"
-    # - pip install requests
-    # - python3 -m unittest discover -s tests || exit 1
-    - docker run --network=test-network --name nginx -d 8197:8197 nginx:latest
-    - docker-compose run test || exit 1
+    - pip install requests
+    - python3 -m unittest discover -s tests || exit 1
+    # - docker run --network=test-network --name nginx -d 8197:8197 nginx:latest
+    # - docker-compose run test || exit 1
   after_script:
     - docker-compose down
     - echo "End of test stage"
