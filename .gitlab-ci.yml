@@ -48,9 +48,9 @@ test:
       ports:
         - "8197:8197"
   variables:
-  DOCKER_HOST: tcp://thedockerhost:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://thedockerhost:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
   image: python:3.12
   # image: docker:latest
   script:
