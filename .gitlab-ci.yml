@@ -29,8 +29,6 @@ pylint:
   stage: pylint
   image: python:3.12
   script:
-    - apt-get update && apt-get install -y dnsutils
-    - nslookup nginx
     - echo "Beginning of pylint stage"
     - pip install pylint requests docker flask
     - pylint --fail-under=8 ./tests/*.py
@@ -52,6 +50,8 @@ test:
   image: python:3.12
   # image: docker:latest
   script:
+    - apt-get update && apt-get install -y dnsutils
+    - nslookup nginx
     - echo "Beginning of test stage"
     - pip install requests
     - python3 -m unittest discover -s tests || exit 1
