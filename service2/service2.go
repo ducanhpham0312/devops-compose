@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -21,13 +22,14 @@ type SystemInfo struct {
 	DiskSpace string `json:"disk_space"`
 	Uptime    string `json:"uptime"`
 }
+
 var (
-	state     = "INIT"
-	stateLog  []string
-	stateLock sync.Mutex
-	totalRequestCount = 0
+	state               = "INIT"
+	stateLog            []string
+	stateLock           sync.Mutex
+	totalRequestCount   = 0
 	successRequestCount = 0
-	startTime = time.Now().UTC()
+	startTime           = time.Now().UTC()
 )
 
 func manageState(w http.ResponseWriter, r *http.Request) {
@@ -35,51 +37,51 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	defer stateLock.Unlock()
 
 	if r.Method == http.MethodGet {
-			// Return the current state without forcing re-authentication
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(state)
-			w.WriteHeader(http.StatusOK)
-			successRequestCount++
-			totalRequestCount++
-			return
-}
+		// Return the current state without forcing re-authentication
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(state)
+		w.WriteHeader(http.StatusOK)
+		successRequestCount++
+		totalRequestCount++
+		return
+	}
 
-// Read and log the raw request body
+	// Read and log the raw request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-			http.Error(w, `Unable to read request body: ` + err.Error(), http.StatusBadRequest)
-			return
+		http.Error(w, `Unable to read request body: `+err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	// Handle state change requests
 	newState := strings.TrimSpace(strings.ToUpper(string(body)))
 
 	if newState != "INIT" && newState != "RUNNING" && newState != "PAUSED" && newState != "SHUTDOWN" {
-			http.Error(w, `ERROR: Invalid state: `+newState, http.StatusBadRequest)
-			totalRequestCount++
-			return
+		http.Error(w, `ERROR: Invalid state: `+newState, http.StatusBadRequest)
+		totalRequestCount++
+		return
 	}
 
 	if newState == state {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode("No change in state")
-			w.WriteHeader(http.StatusOK)
-			successRequestCount++
-			totalRequestCount++
-			return
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode("No change in state")
+		w.WriteHeader(http.StatusOK)
+		successRequestCount++
+		totalRequestCount++
+		return
 	}
 
 	// Handle INIT state
 	if newState == "INIT" {
-			stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> INIT")
-			state = "INIT"
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Access"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode("State changed to INIT. Please re-authenticate.")
-			successRequestCount++
-			totalRequestCount++
-			return
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339)+": "+state+" -> INIT")
+		state = "INIT"
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("WWW-Authenticate", `Basic realm="Restricted Access"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode("State changed to INIT. Please re-authenticate.")
+		successRequestCount++
+		totalRequestCount++
+		return
 	}
 
 	// Handle RUNNING state
@@ -90,12 +92,12 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if state != "INIT" && state != "PAUSED" {
-			http.Error(w, `ERROR: Cannot change state to RUNNING from `+ state, http.StatusForbidden)
+			http.Error(w, `ERROR: Cannot change state to RUNNING from `+state, http.StatusForbidden)
 			totalRequestCount++
 			return
 		}
 
-		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> RUNNING")
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339)+": "+state+" -> RUNNING")
 		state = "RUNNING"
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("State changed to RUNNING")
@@ -108,11 +110,11 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	// Handle PAUSED state
 	if newState == "PAUSED" {
 		if state != "RUNNING" {
-			http.Error(w, `ERROR: Cannot change state to PAUSED from `+ state, http.StatusForbidden)
+			http.Error(w, `ERROR: Cannot change state to PAUSED from `+state, http.StatusForbidden)
 			totalRequestCount++
 			return
 		}
-		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> PAUSED")
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339)+": "+state+" -> PAUSED")
 		state = "PAUSED"
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode("State changed to PAUSED")
@@ -125,11 +127,11 @@ func manageState(w http.ResponseWriter, r *http.Request) {
 	// Handle SHUTDOWN state
 	if newState == "SHUTDOWN" {
 		if state != "RUNNING" && state != "PAUSED" {
-			http.Error(w, `ERROR: Cannot change state to SHUTDOWN from `+ state, http.StatusForbidden)
+			http.Error(w, `ERROR: Cannot change state to SHUTDOWN from `+state, http.StatusForbidden)
 			totalRequestCount++
 			return
 		}
-		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339) + ": " + state + " -> SHUTDOWN")
+		stateLog = append(stateLog, time.Now().UTC().Format(time.RFC3339)+": "+state+" -> SHUTDOWN")
 		state = "SHUTDOWN"
 		shutdownContainers()
 		w.Header().Set("Content-Type", "application/json")
@@ -184,6 +186,7 @@ func shutdownContainers() {
 		log.Println("No running containers to stop.")
 	}
 }
+
 // Fetch system information
 func getSystemInfo() SystemInfo {
 	ip, _ := exec.Command("hostname", "-i").Output()
@@ -225,11 +228,11 @@ func runLog(w http.ResponseWriter, r *http.Request) {
 func getMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"Total Requests":   totalRequestCount,
+		"Total Requests":      totalRequestCount,
 		"Successful Requests": successRequestCount,
-		"Start Time": startTime.Format(time.RFC3339),
-		"Uptime": time.Since(startTime).String(),
-		"Current State": state,
+		"Start Time":          startTime.Format(time.RFC3339),
+		"Uptime":              fmt.Sprintf("%.2f minutes", time.Since(startTime).Minutes()),
+		"Current State":       state,
 	})
 }
 
