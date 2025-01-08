@@ -8,10 +8,10 @@ services:
   - name: nginx:latest
     alias: nginx
 
-variables:
-  DOCKER_HOST: tcp://thedockerhost:2375/
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
+# variables:
+#   DOCKER_HOST: tcp://thedockerhost:2375/
+#   DOCKER_DRIVER: overlay2
+#   DOCKER_TLS_CERTDIR: ""
 
 build:
   stage: build
