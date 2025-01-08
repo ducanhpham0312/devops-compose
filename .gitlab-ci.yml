@@ -9,6 +9,8 @@ services:
     alias: thedockerhost
   - name: nginx:latest
     alias: nginx
+    ports:
+      - "8197:8197"
 
 variables:
   DOCKER_HOST: tcp://thedockerhost:2375/
@@ -29,6 +31,8 @@ pylint:
   stage: pylint
   image: python:3.12
   script:
+    - apt-get update && apt-get install -y dnsutils
+    - nslookup nginx
     - echo "Beginning of pylint stage"
     - pip install pylint requests docker flask
     - pylint --fail-under=8 ./tests/*.py
@@ -39,6 +43,16 @@ pylint:
 
 test:
   stage: test
+  services:
+    - docker:dind
+    - name: nginx:latest
+      alias: nginx
+      ports:
+        - "8197:8197"
+  variables:
+  DOCKER_HOST: tcp://thedockerhost:2375/
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
   image: python:3.12
   # image: docker:latest
   script:
