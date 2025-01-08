@@ -7,8 +7,6 @@ stages:
 services:
   - name: docker:20.10.9-dind
     alias: thedockerhost
-  - name: nginx:latest
-    alias: nginx
 
 variables:
   DOCKER_HOST: tcp://thedockerhost:2375/
@@ -19,7 +17,7 @@ build:
   stage: build
   script:
     - echo "Beginning of build stage"
-    - docker-compose up --build -d
+    - docker-compose build 
     - docker images
     - echo "End of build stage"
   only:
@@ -39,24 +37,8 @@ pylint:
 
 test:
   stage: test
-  services:
-    - docker:dind
-    - name: nginx:latest
-      alias: nginx
-  variables:
-    DOCKER_HOST: tcp://thedockerhost:2375/
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-  image: python:3.12
-  # image: docker:latest
   script:
-    - apt-get update && apt-get install -y dnsutils
-    - nslookup nginx
-    - echo "Beginning of test stage"
-    - pip install requests
-    - python3 -m unittest discover -s tests || exit 1
-    # - docker run --network=test-network --name nginx -d 8197:8197 nginx:latest
-    # - docker-compose run test || exit 1
+    - docker-compose up --build test || exit 1
   after_script:
     - docker-compose down
     - echo "End of test stage"

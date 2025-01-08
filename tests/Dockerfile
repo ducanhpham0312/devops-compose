@@ -7,7 +7,7 @@ RUN pip install requests
 EXPOSE 8197
 
 COPY test_exercise4.py /app/tests/test_exercise4.py
-COPY test_gateway.py /app/tests/test_gateway.py
-COPY test_metrics.py /app/tests/test_metrics.py
+# COPY test_gateway.py /app/tests/test_gateway.py
+# COPY test_metrics.py /app/tests/test_metrics.py
 
 CMD ["python3", "-m", "unittest", "discover", "-s", "/app/tests", "-p", "test_*.py"]

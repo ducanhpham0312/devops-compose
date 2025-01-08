@@ -1,48 +1,28 @@
 services:
   service1:
-    build:
-      context: ./service1
+    build: ./service1
     expose:
       - "8199:8199"
     deploy:
       replicas: 3
     depends_on:
       - service2
-    networks:
-      - app-network
-
-  service2:
-    build:
-      context: ./service2
-    expose:
-      - "8200:8200"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - app-network
+
+  service2:
+    build: ./service2
+    expose:
+      - "8200:8200"
 
   nginx:
-    build:
-      context: ./nginx
-      dockerfile: Dockerfile  
+    build: ./nginx
     ports:
       - "8198:8198"
-      - "8197:8197"
     depends_on:
       - service1
-      - service2
-    networks:
-      - app-network
 
   test:
-    build:
-      context: ./tests
-      dockerfile: Dockerfile
+    build: ./tests
     depends_on:
       - nginx
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
