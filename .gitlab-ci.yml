@@ -37,13 +37,14 @@ pylint:
 
 test:
   stage: test
-  image: python:3.12
+  # image: python:3.12
+  image: docker:latest
   script:
     - echo "Beginning of test stage"
-    - pip install requests
-    - python3 -m unittest discover -s tests || exit 1
-    # - docker run -d --net host nginx
-    # - docker-compose run test || exit 1
+    # - pip install requests
+    # - python3 -m unittest discover -s tests || exit 1
+    - docker run --network=test-network --name nginx -d 8197:8197 nginx:latest
+    - docker-compose run test || exit 1
   after_script:
     - docker-compose down
     - echo "End of test stage"
