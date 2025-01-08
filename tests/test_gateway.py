@@ -28,7 +28,7 @@ class TestGateway(unittest.TestCase):
     def test_get_info(self):
         """Test that the info endpoint is accessible."""
         response = requests.get(
-            f"{self.url}/info",
+            f"{self.url}/request",
             auth=(self.username, self.password),
             timeout=10)
         self.assertEqual(response.status_code, 200)

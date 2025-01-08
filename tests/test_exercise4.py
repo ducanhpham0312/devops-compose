@@ -14,7 +14,7 @@ class TestApp(unittest.TestCase):
 
     def test_get_info(self):
         """Test that the info endpoint is accessible"""
-        url = "http://nginx:8197/info"
+        url = "http://nginx:8197/request"
         response = requests.get(url, auth=("username", "password"), timeout=10)
         self.assertEqual(response.status_code, 200)
 

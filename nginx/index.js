@@ -1,6 +1,6 @@
 async function makeRequest() {
   try {
-      const response = await fetch('/info');
+      const response = await fetch('/request');
       const data = await response.text();
       document.getElementById('responseArea').value = JSON.stringify(JSON.parse(data), undefined, 4);
   } catch (error) {
