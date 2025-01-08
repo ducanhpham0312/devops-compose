@@ -38,7 +38,8 @@ pylint:
 test:
   stage: test
   script:
-    - docker-compose up --build test || exit 1
+    - docker-compose up --build -d
+    - docker-compose run test || exit 1
   after_script:
     - docker-compose down
     - echo "End of test stage"
