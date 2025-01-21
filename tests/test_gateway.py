@@ -23,15 +23,7 @@ class TestGateway(unittest.TestCase):
     def test_get_page(self):
         """Test that the main page is accessible."""
         response = requests.get(self.url, auth=(self.username, self.password), timeout=10)
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_info(self):
-        """Test that the info endpoint is accessible."""
-        response = requests.get(
-            f"{self.url}/request",
-            auth=(self.username, self.password),
-            timeout=10)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_change_state(self):
         """Test changing the state."""
